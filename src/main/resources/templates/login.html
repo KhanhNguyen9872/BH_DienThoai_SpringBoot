@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập Quản trị - PhoneStore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h3>Đăng nhập Quản trị</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Display error message if login fails -->
+                    <div th:if="${param.error}" class="alert alert-danger">
+                        Tên người dùng hoặc mật khẩu không hợp lệ!
+                    </div>
+                    <!-- Display logout message if applicable -->
+                    <div th:if="${param.logout}" class="alert alert-success">
+                        Bạn đã đăng xuất thành công!
+                    </div>
+                    <form th:action="@{/authenticateTheUser}" method="post">
+                        <!-- CSRF token for Spring Security -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Tên người dùng</label>
+                            <input type="text" id="username" name="username" class="form-control" placeholder="Nhập tên người dùng" required autofocus>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mật khẩu</label>
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Bootstrap Bundle JS from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
