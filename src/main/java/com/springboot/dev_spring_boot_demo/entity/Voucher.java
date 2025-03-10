@@ -1,7 +1,12 @@
 package com.springboot.dev_spring_boot_demo.entity;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "voucher")
@@ -87,6 +92,32 @@ public class Voucher {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public List<Integer> getArrayLimitUser() {
+        if (limitUser == null || limitUser.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(limitUser, new TypeReference<List<Integer>>() {});
+        } catch (Exception e) {
+            // Log error if needed
+            return Collections.emptyList();
+        }
+    }
+
+    public List<Integer> getArrayUserId() {
+        if (userId == null || userId.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(userId, new TypeReference<List<Integer>>() {});
+        } catch (Exception e) {
+            // Log error if needed
+            return Collections.emptyList();
+        }
     }
 
     @Override

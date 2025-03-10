@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Người Dùng</title>
+    <!-- Bootstrap CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+</head>
+<body class="bg-light">
+
+<!-- Header: Greeting and User Actions -->
+<div class="px-4 my-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <h5>
+            Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+        </h5>
+        <div>
+            <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="px-4 mb-4">
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <a th:href="@{/dashboard}" class="btn btn-primary">
+            <i class="bi-speedometer2 me-1"></i> Bảng điều khiển
+        </a>
+        <a th:href="@{/products}" class="btn btn-primary">
+            <i class="bi-phone me-1"></i> Sản phẩm
+        </a>
+        <a th:href="@{/orders}" class="btn btn-primary">
+            <i class="bi-cart me-1"></i> Đơn hàng
+        </a>
+        <a th:href="@{/users}" class="btn btn-primary">
+            <i class="bi-people me-1"></i> Người dùng
+        </a>
+        <a th:href="@{/accounts}" class="btn btn-secondary">
+            <i class="bi-person me-1"></i> Tài khoản
+        </a>
+        <a th:href="@{/vouchers}" class="btn btn-primary">
+            <i class="bi-tag me-1"></i> Phiếu giảm giá
+        </a>
+        <a th:href="@{/analytics}" class="btn btn-primary">
+            <i class="bi-graph-up me-1"></i> Phân tích
+        </a>
+        <a th:href="@{/chatbot}" class="btn btn-primary">
+            <i class="bi-chat-dots me-1"></i> Lịch sử Chatbot
+        </a>
+        <a th:href="@{/admins}" class="btn btn-primary">
+            <i class="bi-shield-lock me-1"></i> Quản trị viên
+        </a>
+        <a th:href="@{/settings}" class="btn btn-primary">
+            <i class="bi-gear me-1"></i> Cài đặt
+        </a>
+    </div>
+</div>
+
+<hr>
+
+<div class="px-4 mb-4">
+    <h2>Quản lý Tài Khoản</h2>
+    <p class="text-muted">Quản lý các tài khoản hệ thống.</p>
+
+    <!-- Flash Messages -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <!-- Button to create a new account -->
+    <a th:href="@{/accounts/create}" class="btn btn-success mb-3">Thêm Tài Khoản Mới</a>
+
+    <!-- Account Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Tên đăng nhập</th>
+                <th>Người dùng</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Display a message if no accounts exist -->
+            <tr th:if="${accountsPage.content.empty}">
+                <td colspan="5" class="text-center">Không có tài khoản nào.</td>
+            </tr>
+            <!-- Iterate over accounts -->
+            <tr th:each="account : ${accountsPage.content}">
+                <td th:text="${account.id}"></td>
+                <td th:text="${account.username}"></td>
+                <td th:text="${account.user != null ? account.user.fullName : 'N/A'}"></td>
+                <td th:text="${account.lockAcc} ? 'Bị khóa' : 'Đang hoạt động'"></td>
+                <td>
+                    <a th:href="@{'/accounts/edit/' + ${account.id}}" class="btn btn-sm btn-primary">Chỉnh sửa</a>
+                    <form th:action="@{'/accounts/delete/' + ${account.id}}" method="post" class="d-inline-block"
+                          onsubmit="return confirm('Bạn chắc chắn muốn xóa tài khoản này?');">
+                        <input type="hidden" name="_method" value="delete"/>
+                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Links -->
+    <div class="d-flex justify-content-center mt-3">
+        <nav>
+            <ul class="pagination">
+                <!-- Previous Page Link -->
+                <li th:classappend="${accountsPage.first} ? 'page-item disabled' : 'page-item'">
+                    <a th:if="${!accountsPage.first}"
+                       th:href="@{/accounts(page=${accountsPage.number - 1}, size=${accountsPage.size})}"
+                       class="page-link" rel="prev">Trang trước</a>
+                    <span th:if="${accountsPage.first}" class="page-link">Trang trước</span>
+                </li>
+                <!-- Page Numbers -->
+                <li th:each="pageNum : ${#numbers.sequence(0, accountsPage.totalPages - 1)}"
+                    th:classappend="${accountsPage.number == pageNum} ? 'page-item active' : 'page-item'">
+                    <a th:href="@{/accounts(page=${pageNum}, size=${accountsPage.size})}"
+                       class="page-link" th:text="${pageNum + 1}"></a>
+                </li>
+                <!-- Next Page Link -->
+                <li th:classappend="${accountsPage.last} ? 'page-item disabled' : 'page-item'">
+                    <a th:if="${!accountsPage.last}"
+                       th:href="@{/accounts(page=${accountsPage.number + 1}, size=${accountsPage.size})}"
+                       class="page-link" rel="next">Trang sau</a>
+                    <span th:if="${accountsPage.last}" class="page-link">Trang sau</span>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Optionally include JS files -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

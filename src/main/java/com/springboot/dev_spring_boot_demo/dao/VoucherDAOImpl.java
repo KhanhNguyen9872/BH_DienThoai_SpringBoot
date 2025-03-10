@@ -5,7 +5,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
@@ -42,5 +46,18 @@ public class VoucherDAOImpl implements VoucherDAO {
         if (voucher != null) {
             em.remove(voucher);
         }
+    }
+
+    @Override
+    public Page<Voucher> findAll(Pageable pageable) {
+        TypedQuery<Voucher> query = em.createQuery("from Voucher", Voucher.class);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+        List<Voucher> vouchers = query.getResultList();
+
+        // Count total vouchers
+        Long count = em.createQuery("select count(v) from Voucher v", Long.class).getSingleResult();
+
+        return new PageImpl<>(vouchers, pageable, count);
     }
 }

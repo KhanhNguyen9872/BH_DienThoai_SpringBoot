@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Người Dùng</title>
+    <!-- Bootstrap CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+
+<!-- Header: Greeting and User Actions -->
+<div class="px-4 my-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <h5>
+            Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+        </h5>
+        <div>
+            <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="px-4 mb-4">
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <a th:href="@{/dashboard}" class="btn btn-primary">
+            <i class="bi-speedometer2 me-1"></i> Bảng điều khiển
+        </a>
+        <a th:href="@{/products}" class="btn btn-primary">
+            <i class="bi-phone me-1"></i> Sản phẩm
+        </a>
+        <a th:href="@{/orders}" class="btn btn-primary">
+            <i class="bi-cart me-1"></i> Đơn hàng
+        </a>
+        <a th:href="@{/users}" class="btn btn-primary">
+            <i class="bi-people me-1"></i> Người dùng
+        </a>
+        <a th:href="@{/accounts}" class="btn btn-primary">
+            <i class="bi-person me-1"></i> Tài khoản
+        </a>
+        <a th:href="@{/vouchers}" class="btn btn-primary">
+            <i class="bi-tag me-1"></i> Phiếu giảm giá
+        </a>
+        <a th:href="@{/analytics}" class="btn btn-secondary">
+            <i class="bi-graph-up me-1"></i> Phân tích
+        </a>
+        <a th:href="@{/chatbot}" class="btn btn-primary">
+            <i class="bi-chat-dots me-1"></i> Lịch sử Chatbot
+        </a>
+        <a th:href="@{/admins}" class="btn btn-primary">
+            <i class="bi-shield-lock me-1"></i> Quản trị viên
+        </a>
+        <a th:href="@{/settings}" class="btn btn-primary">
+            <i class="bi-gear me-1"></i> Cài đặt
+        </a>
+    </div>
+</div>
+
+<hr>
+<div class="px-4 mt-4">
+    <!-- Page Title -->
+    <div class="d-flex align-items-center mb-4">
+        <h2 class="mb-0">Phân tích & Báo cáo</h2>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="row">
+        <!-- Tổng số đơn hàng -->
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tổng số đơn hàng</h5>
+                    <p class="card-text fs-4 fw-bold" th:text="${tongDonHang}"></p>
+                </div>
+            </div>
+        </div>
+        <!-- Tổng số người dùng -->
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tổng số người dùng</h5>
+                    <p class="card-text fs-4 fw-bold" th:text="${tongNguoiDung}"></p>
+                </div>
+            </div>
+        </div>
+        <!-- Tổng doanh thu (VND) -->
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tổng doanh thu (VND)</h5>
+                    <p class="card-text fs-4 fw-bold">
+                        <span th:text="${formattedRevenue}"></span> VND
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Tỷ lệ chuyển đổi -->
+        <div class="col-md-3 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Tỷ lệ chuyển đổi</h5>
+                    <p class="card-text fs-4 fw-bold" th:text="${tyLeChuyenDoi} + '%'"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn hàng hàng tháng</h5>
+                    <canvas id="ordersChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Tăng trưởng người dùng</h5>
+                    <canvas id="usersChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn hàng gần đây</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Mã ĐH</th>
+                                <th>Người mua</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày đặt</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:if="${#lists.isEmpty(donHangGanDay)}">
+                                <td colspan="5" class="text-center">Không có đơn hàng gần đây</td>
+                            </tr>
+                            <tr th:each="order : ${donHangGanDay}">
+                                <td th:text="'#' + ${order.id}"></td>
+                                <td>
+                                    <span th:if="${order.user != null}" th:text="${order.user.fullName}"></span>
+                                    <span th:if="${order.user == null}">Không xác định</span>
+                                </td>
+                                <td>
+                                        <span th:if="${order.orderInfo != null}"
+                                              th:text="${#numbers.formatDecimal(order.orderInfo.totalPrice, 0, 0)} + ' VND'"></span>
+                                    <span th:if="${order.orderInfo == null}">0 VND</span>
+                                </td>
+                                <td>
+                                        <span th:if="${order.orderInfo != null}">
+                                            <span th:switch="${order.orderInfo.status}">
+                                                <span th:case="'completed'" class="badge bg-success">Hoàn tất</span>
+                                                <span th:case="'pending'" class="badge bg-warning">Chờ xử lý</span>
+                                                <span th:case="*"
+                                                      class="badge bg-danger" th:text="${#strings.capitalize(order.orderInfo.status)}"></span>
+                                            </span>
+                                        </span>
+                                    <span th:if="${order.orderInfo == null}" class="badge bg-secondary">N/A</span>
+                                </td>
+                                <td>
+                                        <span th:if="${order.orderInfo != null and order.orderInfo.orderAt != null}"
+                                              th:text="${order.orderInfo.orderAt.format(T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd'))}"></span>
+                                    <span th:if="${order.orderInfo == null or order.orderInfo.orderAt == null}">N/A</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const nhanDonHang     = [[${nhanDonHang}]];
+    const duLieuDonHang   = [[${duLieuDonHang}]];
+    const nhanNguoiDung   = [[${nhanNguoiDung}]];
+    const duLieuNguoiDung = [[${duLieuNguoiDung}]];
+
+    // Orders Chart
+    const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+    new Chart(ordersCtx, {
+        type: 'line',
+        data: {
+            labels: nhanDonHang,
+            datasets: [{
+                label: 'Đơn hàng',
+                data: duLieuDonHang,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: false,
+            }]
+        },
+    });
+
+    // Users Chart
+    const usersCtx = document.getElementById('usersChart').getContext('2d');
+    new Chart(usersCtx, {
+        type: 'bar',
+        data: {
+            labels: nhanNguoiDung,
+            datasets: [{
+                label: 'Người dùng mới',
+                data: duLieuNguoiDung,
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+            }]
+        },
+    });
+    /*]]>*/
+</script>
+</body>
+</html>
