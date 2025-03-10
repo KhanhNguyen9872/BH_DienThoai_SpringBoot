@@ -4,8 +4,9 @@ import com.springboot.dev_spring_boot_demo.dao.OrderDAO;
 import com.springboot.dev_spring_boot_demo.entity.Order;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -18,8 +19,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findAll() {
-        return orderDAO.findAll();
+    public Page<Order> findAll(Pageable pageable) {
+        return orderDAO.findAll(pageable);
     }
 
     @Override

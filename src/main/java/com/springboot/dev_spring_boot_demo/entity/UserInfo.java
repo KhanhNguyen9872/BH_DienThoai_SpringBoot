@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "user") // or whatever your table name is
+@Table(name = "user") // or your actual user table name
 public class UserInfo {
 
     @Id
@@ -21,10 +21,15 @@ public class UserInfo {
     @Column(name = "email")
     private String email;
 
-    // Instead of mapping orderInfos (which is not possible without a 'user' property in OrderInfo),
-    // map the orders collection from the orders table.
+    // Existing relationship for orders
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Order> orders;
+
+    // One-to-many relationship with Address.
+    // CascadeType.ALL ensures that when a user is saved/removed,
+    // associated addresses are handled accordingly.
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses;
 
     public UserInfo() {
     }
@@ -69,6 +74,14 @@ public class UserInfo {
 
     public void setOrders(List<Order> orders) {
         this.orders = orders;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
     }
 
     // Derived property for full name

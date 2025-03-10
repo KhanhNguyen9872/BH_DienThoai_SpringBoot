@@ -71,4 +71,10 @@ public class Order {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    @Transient
+    public String getUserFullName() {
+        return user != null ? user.getFullName() : "";
+    }
+
 }

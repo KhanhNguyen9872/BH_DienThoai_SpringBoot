@@ -1,10 +1,11 @@
 package com.springboot.dev_spring_boot_demo.service;
 
 import com.springboot.dev_spring_boot_demo.entity.Product;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductService {
-    List<Product> findAll();
+    Page<Product> findAll(Pageable pageable);
     Product findById(int id);
     Product save(Product product);
     void deleteById(int id);

@@ -5,6 +5,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -19,9 +22,20 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public List<Order> findAll() {
-        TypedQuery<Order> query = em.createQuery("from Order", Order.class);
-        return query.getResultList();
+    public Page<Order> findAll(Pageable pageable) {
+        String jpql = "from Order";
+        TypedQuery<Order> query = em.createQuery(jpql, Order.class);
+        List<Order> orders;
+        if (pageable.isPaged()) {
+            query.setFirstResult((int) pageable.getOffset());
+            query.setMaxResults(pageable.getPageSize());
+            orders = query.getResultList();
+        } else {
+            orders = query.getResultList();
+        }
+        TypedQuery<Long> countQuery = em.createQuery("select count(o) from Order o", Long.class);
+        Long total = countQuery.getSingleResult();
+        return new PageImpl<>(orders, pageable, total);
     }
 
     @Override

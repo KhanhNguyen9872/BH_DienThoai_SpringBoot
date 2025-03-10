@@ -4,8 +4,9 @@ import com.springboot.dev_spring_boot_demo.dao.UserInfoDAO;
 import com.springboot.dev_spring_boot_demo.entity.UserInfo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class UserInfoServiceImpl implements UserInfoService {
@@ -18,8 +19,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public List<UserInfo> findAll() {
-        return userInfoDAO.findAll();
+    public Page<UserInfo> findAll(Pageable pageable) {
+        return userInfoDAO.findAll(pageable);
     }
 
     @Override

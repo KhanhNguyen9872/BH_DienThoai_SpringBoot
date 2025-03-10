@@ -103,7 +103,7 @@ public class Product {
         this.updatedAt = updatedAt;
     }
 
-    private List<Integer> toFavouritesArray() {
+    public List<Integer> toFavouritesArray() {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
@@ -120,7 +120,7 @@ public class Product {
         return null;
     }
 
-    private List<ProductColor> toProductColorsObject() {
+    public List<ProductColor> toProductColorsObject() {
         try {
             // Create ObjectMapper instance
             ObjectMapper mapper = new ObjectMapper();
@@ -154,6 +154,14 @@ public class Product {
         }
 
         return productVariants.get(0).getImg();
+    }
+
+    public String getDefaultPrice() {
+        List<ProductColor> productVariants = this.toProductColorsObject();
+        if (productVariants == null || productVariants.isEmpty()) {
+            return "";
+        }
+        return productVariants.get(0).getMoney();
     }
 
     public String getAllColorName() {

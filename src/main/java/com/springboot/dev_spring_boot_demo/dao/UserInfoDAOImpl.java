@@ -5,6 +5,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -19,9 +22,20 @@ public class UserInfoDAOImpl implements UserInfoDAO {
     }
 
     @Override
-    public List<UserInfo> findAll() {
-        TypedQuery<UserInfo> query = em.createQuery("from UserInfo", UserInfo.class);
-        return query.getResultList();
+    public Page<UserInfo> findAll(Pageable pageable) {
+        String jpql = "from UserInfo";
+        TypedQuery<UserInfo> query = em.createQuery(jpql, UserInfo.class);
+        List<UserInfo> users;
+        if (pageable.isPaged()) {
+            query.setFirstResult((int) pageable.getOffset());
+            query.setMaxResults(pageable.getPageSize());
+            users = query.getResultList();
+        } else {
+            users = query.getResultList();
+        }
+        TypedQuery<Long> countQuery = em.createQuery("select count(u) from UserInfo u", Long.class);
+        Long total = countQuery.getSingleResult();
+        return new PageImpl<>(users, pageable, total);
     }
 
     @Override

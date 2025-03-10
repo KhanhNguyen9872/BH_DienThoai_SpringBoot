@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springboot.dev_spring_boot_demo.entity.*;
 import com.springboot.dev_spring_boot_demo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -36,7 +38,8 @@ public class DashboardController extends HeaderController {
         addHeaderDataToModel(userDetails, model);
 
         // Retrieve all products using the service
-        List<Product> products = productService.findAll();
+        Page<Product> productsData = productService.findAll(Pageable.unpaged());
+        List<Product> products = productsData.getContent();
         long productCount = products.size();
         long totalQuantity = products.stream().mapToLong(product -> {
             String colorJson = product.getColor();
@@ -65,7 +68,8 @@ public class DashboardController extends HeaderController {
         }).sum();
 
         // Retrieve all orders using the service and calculate total sold quantity from each order's OrderInfo
-        List<Order> orders = orderService.findAll();
+        Page<Order> ordersData = orderService.findAll(Pageable.unpaged());
+        List<Order> orders = ordersData.getContent();
         long totalSoldQuantity = orders.stream().mapToLong(order -> {
             OrderInfo orderInfo = order.getOrderInfo();
             if (orderInfo != null) {
@@ -94,7 +98,7 @@ public class DashboardController extends HeaderController {
         }).sum();
 
         // Retrieve total users count and total orders count using their services
-        long totalUsers = userInfoService.findAll().size();
+        long totalUsers = userInfoService.findAll(Pageable.unpaged()).getContent().size();
         long totalOrders = orders.size();
 
         // Pass values to the view

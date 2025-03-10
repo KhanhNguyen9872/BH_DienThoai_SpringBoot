@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Người Dùng</title>
+    <!-- Bootstrap CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+</head>
+<body class="bg-light">
+
+<!-- Header: Greeting and User Actions -->
+<div class="px-4 my-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <h5>
+            Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+        </h5>
+        <div>
+            <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="px-4 mb-4">
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <a th:href="@{/dashboard}" class="btn btn-primary">
+            <i class="bi-speedometer2 me-1"></i> Bảng điều khiển
+        </a>
+        <a th:href="@{/products}" class="btn btn-primary">
+            <i class="bi-phone me-1"></i> Sản phẩm
+        </a>
+        <a th:href="@{/orders}" class="btn btn-primary">
+            <i class="bi-cart me-1"></i> Đơn hàng
+        </a>
+        <a th:href="@{/users}" class="btn btn-secondary">
+            <i class="bi-people me-1"></i> Người dùng
+        </a>
+        <a th:href="@{/accounts}" class="btn btn-primary">
+            <i class="bi-person me-1"></i> Tài khoản
+        </a>
+        <a th:href="@{/vouchers}" class="btn btn-primary">
+            <i class="bi-tag me-1"></i> Phiếu giảm giá
+        </a>
+        <a th:href="@{/analytics}" class="btn btn-primary">
+            <i class="bi-graph-up me-1"></i> Phân tích
+        </a>
+        <a th:href="@{/chatbot}" class="btn btn-primary">
+            <i class="bi-chat-dots me-1"></i> Lịch sử Chatbot
+        </a>
+        <a th:href="@{/admins}" class="btn btn-primary">
+            <i class="bi-shield-lock me-1"></i> Quản trị viên
+        </a>
+        <a th:href="@{/settings}" class="btn btn-primary">
+            <i class="bi-gear me-1"></i> Cài đặt
+        </a>
+    </div>
+</div>
+
+<hr>
+
+<div class="px-4 mt-4">
+    <h2>Quản lý Người Dùng</h2>
+    <p class="text-muted">Quản lý thông tin người dùng tại đây. Bạn có thể tạo, chỉnh sửa, hoặc xóa người dùng.</p>
+
+    <!-- Success and Error Alerts -->
+    <div th:if="${param.success}" class="alert alert-success">
+        <p th:text="${param.success}"></p>
+    </div>
+    <div th:if="${param.error}" class="alert alert-danger">
+        <p th:text="${param.error}"></p>
+    </div>
+
+    <!-- Button to add a new user -->
+    <a th:href="@{/users/create}" class="btn btn-success mb-3">Thêm Người Dùng Mới</a>
+
+    <!-- Users Table -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Họ</th>
+                <th>Tên</th>
+                <th>Email</th>
+                <th>Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- If no users, show a message -->
+            <tr th:if="${#lists.isEmpty(usersPage.content)}">
+                <td colspan="5" class="text-center">Không có người dùng nào.</td>
+            </tr>
+            <!-- Otherwise, iterate through users -->
+            <tr th:each="user : ${usersPage.content}">
+                <td th:text="${user.id}">1</td>
+                <td th:text="${user.firstName}">Họ</td>
+                <td th:text="${user.lastName}">Tên</td>
+                <td th:text="${user.email}">Email</td>
+                <td>
+                    <a th:href="@{'/users/edit/' + ${user.id}}" class="btn btn-sm btn-primary">Chỉnh sửa</a>
+                    <form th:action="@{'/users/delete/' + ${user.id}}" method="post" class="d-inline-block" onsubmit="return confirmDelete();">
+                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Navigation -->
+    <div class="d-flex justify-content-center mt-3">
+        <nav>
+            <ul class="pagination">
+                <!-- Previous page -->
+                <li class="page-item" th:classappend="${usersPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{'/users?page=' + (${usersPage.number} - 1)}" rel="prev">Trang trước</a>
+                </li>
+                <!-- Page numbers -->
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+                    th:classappend="${usersPage.number == i} ? 'active'">
+                    <a class="page-link" th:href="@{'/users?page=' + ${i}}" th:text="${i + 1}">1</a>
+                </li>
+                <!-- Next page -->
+                <li class="page-item" th:classappend="${usersPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{'/users?page=' + (${usersPage.number} + 1)}" rel="next">Trang sau</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- JavaScript for confirmation -->
+<script>
+    function confirmDelete() {
+        return confirm('Bạn chắc chắn muốn xóa người dùng này?');
+    }
+</script>
+
+<!-- Bootstrap JS (Bundle) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

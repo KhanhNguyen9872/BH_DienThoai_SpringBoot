@@ -4,8 +4,9 @@ import com.springboot.dev_spring_boot_demo.dao.ProductDAO;
 import com.springboot.dev_spring_boot_demo.entity.Product;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -18,8 +19,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> findAll() {
-        return productDAO.findAll();
+    public Page<Product> findAll(Pageable pageable) {
+        return productDAO.findAll(pageable);
     }
 
     @Override

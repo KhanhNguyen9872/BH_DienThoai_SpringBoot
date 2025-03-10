@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý Người Dùng</title>
+  <!-- Bootstrap CSS from CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+</head>
+<body class="bg-light">
+
+<!-- Header: Greeting and User Actions -->
+<div class="px-4 my-4">
+  <div class="d-flex align-items-center justify-content-between">
+    <h5>
+      Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+    </h5>
+    <div>
+      <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
+      <form th:action="@{/logout}" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="px-4 mb-4">
+  <div class="d-flex flex-wrap gap-2 justify-content-center">
+    <a th:href="@{/dashboard}" class="btn btn-primary">
+      <i class="bi-speedometer2 me-1"></i> Bảng điều khiển
+    </a>
+    <a th:href="@{/products}" class="btn btn-primary">
+      <i class="bi-phone me-1"></i> Sản phẩm
+    </a>
+    <a th:href="@{/orders}" class="btn btn-secondary">
+      <i class="bi-cart me-1"></i> Đơn hàng
+    </a>
+    <a th:href="@{/users}" class="btn btn-primary">
+      <i class="bi-people me-1"></i> Người dùng
+    </a>
+    <a th:href="@{/accounts}" class="btn btn-primary">
+      <i class="bi-person me-1"></i> Tài khoản
+    </a>
+    <a th:href="@{/vouchers}" class="btn btn-primary">
+      <i class="bi-tag me-1"></i> Phiếu giảm giá
+    </a>
+    <a th:href="@{/analytics}" class="btn btn-primary">
+      <i class="bi-graph-up me-1"></i> Phân tích
+    </a>
+    <a th:href="@{/chatbot}" class="btn btn-primary">
+      <i class="bi-chat-dots me-1"></i> Lịch sử Chatbot
+    </a>
+    <a th:href="@{/admins}" class="btn btn-primary">
+      <i class="bi-shield-lock me-1"></i> Quản trị viên
+    </a>
+    <a th:href="@{/settings}" class="btn btn-primary">
+      <i class="bi-gear me-1"></i> Cài đặt
+    </a>
+  </div>
+</div>
+
+<hr>
+
+<div class="container-fluid mt-4">
+  <h1 class="mb-4">Chi tiết đơn hàng</h1>
+
+  <!-- Thông báo thành công hoặc lỗi -->
+  <div th:if="${param.success}" class="alert alert-success mt-3" th:text="${param.success}"></div>
+  <div th:if="${param.error}" class="alert alert-danger mt-3" th:text="${param.error}"></div>
+
+  <div class="card shadow-sm w-100">
+    <div class="card-body">
+      <h4 class="card-title">Đơn hàng #<span th:text="${order.id}"></span></h4>
+
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Khách hàng:</strong> <span th:text="${order.user.fullName}"></span></p>
+          <p><strong>Trạng thái:</strong> <span th:text="${order.orderInfo.status}"></span></p>
+          <p><strong>Thanh toán:</strong>
+            <span th:if="${order.orderInfo != null}">
+                            <span th:switch="${order.orderInfo.payment}">
+                                <span th:case="'tienmat'">Tiền mặt</span>
+                                <span th:case="'momo'">MoMo</span>
+                                <span th:case="'nganhang'">Ngân hàng</span>
+                                <span th:case="*"
+                                      th:text="${#strings.capitalize(order.orderInfo.payment)}"></span>
+                            </span>
+                        </span>
+            <span th:if="${order.orderInfo == null}" class="text-muted">Không có</span>
+          </p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Tổng giá trị:</strong>
+            <span th:if="${order.orderInfo != null}"
+                  th:text="${@currencyUtil.formatVND(order.orderInfo.totalPrice)}"></span>
+            <span th:if="${order.orderInfo == null}" class="text-muted">Không có</span>
+          </p>
+          <p><strong>Ngày đặt hàng:</strong>
+            <span th:if="${order.orderInfo != null and order.orderInfo.orderAt != null}"
+                  th:text="${#temporals.format(order.orderInfo.orderAt, 'dd/MM/yyyy HH:mm')}"></span>
+            <span th:if="${order.orderInfo == null or order.orderInfo.orderAt == null}" class="text-muted">Không có</span>
+          </p>
+        </div>
+      </div>
+
+      <h5 class="mt-4">Địa chỉ</h5>
+      <div class="card p-3 mb-4">
+        <p><strong>Họ tên:</strong> <span th:text="${order.orderInfo.orderInfoAddress != null ? order.orderInfo.orderInfoAddress.name : 'Không có'}"></span></p>
+        <p><strong>Số điện thoại:</strong> <span th:text="${order.orderInfo.orderInfoAddress != null ? order.orderInfo.orderInfoAddress.phone : 'Không có'}"></span></p>
+        <p><strong>Địa chỉ:</strong> <span th:text="${order.orderInfo.orderInfoAddress != null ? order.orderInfo.orderInfoAddress.address : 'Không có'}"></span></p>
+      </div>
+
+      <h5 class="mt-4">Sản phẩm</h5>
+      <ul class="list-group">
+        <li class="list-group-item" th:each="product : ${order.orderInfo.orderInfoProducts}">
+          <span th:text="${product.name}"></span> -
+          <span th:text="${product.color}"></span> -
+          <span th:text="${@currencyUtil.formatVND(product.price)} + ' VNĐ'"></span> x
+          <span th:text="${product.quantity}"></span>
+        </li>
+      </ul>
+
+      <div th:if="${order.orderInfo.status == 'Đang chờ xác nhận'}">
+        <form th:action="@{'/orders/confirm/' + ${order.id}}" method="post" id="confirm-order-form">
+          <button type="button" class="btn btn-success mt-4" onclick="confirmOrder()">Xác nhận đơn hàng</button>
+        </form>
+      </div>
+
+      <div th:if="${order.orderInfo.status != 'Đang giao hàng' and order.orderInfo.status != 'Đã giao hàng' and order.orderInfo.status != 'Đã hủy'}">
+        <form th:action="@{'/orders/cancel/' + ${order.id}}" method="post" id="cancel-order-form">
+          <button type="button" class="btn btn-danger mt-4" onclick="cancelOrder()">Hủy đơn hàng</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <a th:href="@{/orders}" class="btn btn-secondary mt-4">Quay lại danh sách đơn hàng</a>
+</div>
+
+<!-- Bootstrap JS (Bundle) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  function confirmOrder() {
+    if (confirm('Bạn chắc chắn muốn xác nhận đơn hàng này?')) {
+      document.getElementById('confirm-order-form').submit();
+    }
+  }
+
+  function cancelOrder() {
+    if (confirm('Bạn chắc chắn muốn hủy đơn hàng này?')) {
+      document.getElementById('cancel-order-form').submit();
+    }
+  }
+</script>
+</body>
+</html>

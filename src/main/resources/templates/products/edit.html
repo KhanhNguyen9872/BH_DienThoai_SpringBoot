@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý Người Dùng</title>
+  <!-- Bootstrap CSS from CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+
+<!-- Header: Greeting and User Actions -->
+<div class="px-4 my-4">
+  <div class="d-flex align-items-center justify-content-between">
+    <h5>
+      Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+    </h5>
+    <div>
+      <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
+      <form th:action="@{/logout}" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="px-4 mb-4">
+  <div class="d-flex flex-wrap gap-2 justify-content-center">
+    <a th:href="@{/dashboard}" class="btn btn-primary">
+      <i class="bi-speedometer2 me-1"></i> Bảng điều khiển
+    </a>
+    <a th:href="@{/products}" class="btn btn-secondary">
+      <i class="bi-phone me-1"></i> Sản phẩm
+    </a>
+    <a th:href="@{/orders}" class="btn btn-primary">
+      <i class="bi-cart me-1"></i> Đơn hàng
+    </a>
+    <a th:href="@{/users}" class="btn btn-primary">
+      <i class="bi-people me-1"></i> Người dùng
+    </a>
+    <a th:href="@{/accounts}" class="btn btn-primary">
+      <i class="bi-person me-1"></i> Tài khoản
+    </a>
+    <a th:href="@{/vouchers}" class="btn btn-primary">
+      <i class="bi-tag me-1"></i> Phiếu giảm giá
+    </a>
+    <a th:href="@{/analytics}" class="btn btn-primary">
+      <i class="bi-graph-up me-1"></i> Phân tích
+    </a>
+    <a th:href="@{/chatbot}" class="btn btn-primary">
+      <i class="bi-chat-dots me-1"></i> Lịch sử Chatbot
+    </a>
+    <a th:href="@{/admins}" class="btn btn-primary">
+      <i class="bi-shield-lock me-1"></i> Quản trị viên
+    </a>
+    <a th:href="@{/settings}" class="btn btn-primary">
+      <i class="bi-gear me-1"></i> Cài đặt
+    </a>
+  </div>
+</div>
+
+<hr>
+<div class="px-4 mt-4">
+  <h1>Chỉnh sửa Sản phẩm</h1>
+
+  <!-- Thông báo thành công -->
+  <div th:if="${param.success}" class="alert alert-success">
+    <p th:text="${param.success}"></p>
+  </div>
+
+  <!-- Thông báo lỗi -->
+  <div th:if="${param.error}" class="alert alert-danger">
+    <p th:text="${param.error}"></p>
+  </div>
+
+  <!-- Khung cuộn -->
+  <div style="max-height: 92vh; overflow-y: auto;">
+    <!-- ProductForm chứa thông tin của sản phẩm cần chỉnh sửa -->
+    <form th:action="@{/products/update}" th:object="${productForm}" method="post" enctype="multipart/form-data">
+      <!-- Chứa trường id (ẩn) -->
+      <input type="hidden" th:field="*{id}" />
+      <!-- Tên sản phẩm -->
+      <div class="form-group">
+        <label for="name" class="form-label">Tên sản phẩm</label>
+        <input type="text" th:field="*{name}" id="name" class="form-control" placeholder="Nhập tên sản phẩm" />
+      </div>
+
+      <!-- Mô tả -->
+      <div class="form-group">
+        <label for="description" class="form-label">Mô tả</label>
+        <textarea th:field="*{description}" id="description" class="form-control" rows="4" placeholder="Nhập mô tả sản phẩm"></textarea>
+      </div>
+
+      <!-- Người dùng yêu thích (Chọn nhiều) sử dụng Select2 -->
+      <div class="form-group">
+        <label for="favorite" class="form-label">Yêu thích</label>
+        <select id="favorite" th:field="*{favorite}" multiple class="form-control">
+          <option th:each="user : ${users}"
+                  th:value="${user.id}"
+                  th:text="'ID: ' + ${user.id} + ' - ' + ${user.email}">
+          </option>
+        </select>
+      </div>
+
+      <!-- Biến thể màu sắc -->
+      <div class="form-group">
+        <label class="form-label">Màu sắc</label>
+        <div class="row" id="colors-container">
+          <!-- Hiển thị danh sách biến thể màu có sẵn -->
+          <div class="col-md-6 color-card"
+               th:each="color, iterStat : *{colors}"
+               th:id="'color-card-' + ${iterStat.index}">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="card-title mb-0">Biến thể màu #<span th:text="${iterStat.index + 1}"></span></h5>
+                  <button type="button" class="btn btn-danger btn-sm"
+                          th:onclick="'removeColorCard(' + ${iterStat.index} + ')'">Xóa</button>
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <!-- Nếu có đường dẫn ảnh hợp lệ -->
+                    <img th:id="'preview-image-' + ${iterStat.index}"
+                         th:if="${color.existingImg != null and color.existingImg != ''}"
+                         th:src="@{${color.existingImg}}"
+                         alt="Ảnh màu" class="img-fluid rounded mb-2"
+                         style="width:225px; height:225px; object-fit:cover;" />
+
+                    <!-- Nếu không có đường dẫn ảnh, hiển thị ảnh mặc định -->
+                    <img th:if="${color.existingImg == null or color.existingImg == ''}"
+                         src="/images/default-phone.png"
+                         alt="Ảnh màu" class="img-fluid rounded mb-2"
+                         style="width:225px; height:225px; object-fit:cover;" />
+
+                    <!-- Lưu đường dẫn ảnh hiện có để giữ lại khi không cập nhật file mới -->
+                    <input type="hidden" th:field="*{colors[__${iterStat.index}__].existingImg}" th:value="${color.existingImg}" />
+                    <div class="mb-2">
+                      <label class="form-label">Đổi ảnh</label>
+                      <input type="file" th:field="*{colors[__${iterStat.index}__].img}" class="form-control" accept=".jpg,.jpeg,.png,.webp"
+                             th:onchange="'handleImagePreview(this, \'preview-image-' + ${iterStat.index} + '\')'">
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="mb-2">
+                      <label class="form-label">Tên</label>
+                      <select th:field="*{colors[__${iterStat.index}__].name}" class="form-control">
+                        <option value="" disabled>Chọn một màu</option>
+                        <!-- Lặp qua danh sách màu có sẵn (pcolors) -->
+                        <option th:each="pc : ${pcolors}"
+                                th:value="${pc.name}"
+                                th:text="${pc.name}"
+                                th:selected="${pc.name == color.name}"></option>
+                      </select>
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label">Giá tiền</label>
+                      <input type="number" th:field="*{colors[__${iterStat.index}__].money}" class="form-control" value="0">
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label">Số lượng</label>
+                      <input type="number" th:field="*{colors[__${iterStat.index}__].quantity}" class="form-control" value="0">
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label">Giá giảm (0 nếu không có)</label>
+                      <input type="number" th:field="*{colors[__${iterStat.index}__].moneyDiscount}" class="form-control" value="0">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Nút thêm mới biến thể màu -->
+        <button type="button" id="add-color-btn" class="btn btn-secondary mt-2">Thêm màu mới</button>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Lưu</button>
+    </form>
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Chèn danh sách pcolors vào JavaScript -->
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  var pcolors = /*[[${pcolors}]]*/ [];
+  var colorCount = /*[[${#lists.size(productForm.colors)}]]*/ 0;
+  var colorIndex = colorCount;
+  /*]]>*/
+</script>
+
+<script>
+  // Khởi tạo Select2 cho trường người dùng yêu thích
+  $(document).ready(function() {
+    $('#favorite').select2({
+      placeholder: "Chọn người dùng yêu thích",
+      allowClear: true,
+      width: '100%'
+    });
+  });
+
+  // Hàm xem trước ảnh khi chọn tệp
+  function handleImagePreview(input, previewImageId) {
+    const file = input.files[0];
+    const previewImage = document.getElementById(previewImageId);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewImage.src = '/images/default-phone.png';
+    }
+  }
+
+  // Thêm mới biến thể màu (không có dữ liệu) động
+  document.addEventListener('DOMContentLoaded', function() {
+    const colorsContainer = document.getElementById('colors-container');
+    const addColorBtn = document.getElementById('add-color-btn');
+
+    addColorBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Nếu cần giới hạn số lượng, bạn có thể thêm điều kiện ở đây
+      let newColorCard = `
+                <div class="col-md-6 color-card" id="color-card-${colorIndex}">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">Biến thể màu #${colorIndex + 1}</h5>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeColorCard(${colorIndex})">Xóa</button>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-4">
+                          <img id="preview-image-${colorIndex}" src="/images/default-phone.png" alt="Ảnh màu" class="img-fluid rounded mb-2" style="width:225px; height:225px; object-fit:cover;">
+                          <input type="hidden" name="colors[${colorIndex}].existingImg" value="/images/default-phone.png">
+                          <div class="mb-2">
+                            <label class="form-label">Đổi ảnh</label>
+                            <input type="file" name="colors[${colorIndex}].img" class="form-control" accept=".jpg,.jpeg,.png,.webp"
+                                   onchange="handleImagePreview(this, 'preview-image-${colorIndex}')">
+                          </div>
+                        </div>
+                        <div class="col-md-8">
+                          <div class="mb-2">
+                            <label class="form-label">Tên</label>
+                            <select name="colors[${colorIndex}].name" class="form-control">
+                              <option value="" disabled selected>Chọn một màu</option>
+                              ${pcolors.map(function(pc) {
+        return `<option value="${pc.name}">${pc.name}</option>`;
+      }).join('')}
+                            </select>
+                          </div>
+                          <div class="mb-2">
+                            <label class="form-label">Giá tiền</label>
+                            <input type="number" name="colors[${colorIndex}].money" class="form-control" value="0">
+                          </div>
+                          <div class="mb-2">
+                            <label class="form-label">Số lượng</label>
+                            <input type="number" name="colors[${colorIndex}].quantity" class="form-control" value="0">
+                          </div>
+                          <div class="mb-2">
+                            <label class="form-label">Giá giảm (0 nếu không có)</label>
+                            <input type="number" name="colors[${colorIndex}].moneyDiscount" class="form-control" value="0">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            `;
+      colorsContainer.insertAdjacentHTML('beforeend', newColorCard);
+      colorIndex++;
+    });
+  });
+
+  // Hàm xóa thẻ màu theo chỉ số
+  function removeColorCard(index) {
+    const card = document.getElementById('color-card-' + index);
+    if (card && confirm("Bạn có chắc muốn xóa biến thể màu này không?")) {
+      card.remove();
+    }
+  }
+</script>
+</body>
+</html>

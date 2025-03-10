@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Người Dùng</title>
+    <!-- Bootstrap CSS from CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+</head>
+<body class="bg-light">
+
+<!-- Header: Greeting and User Actions -->
+<div class="px-4 my-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <h5>
+            Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+        </h5>
+        <div>
+            <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
+            <form th:action="@{/logout}" method="post" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation Buttons -->
+<div class="px-4 mb-4">
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <a th:href="@{/dashboard}" class="btn btn-primary">
+            <i class="bi-speedometer2 me-1"></i> Bảng điều khiển
+        </a>
+        <a th:href="@{/products}" class="btn btn-primary">
+            <i class="bi-phone me-1"></i> Sản phẩm
+        </a>
+        <a th:href="@{/orders}" class="btn btn-primary">
+            <i class="bi-cart me-1"></i> Đơn hàng
+        </a>
+        <a th:href="@{/users}" class="btn btn-secondary">
+            <i class="bi-people me-1"></i> Người dùng
+        </a>
+        <a th:href="@{/accounts}" class="btn btn-primary">
+            <i class="bi-person me-1"></i> Tài khoản
+        </a>
+        <a th:href="@{/vouchers}" class="btn btn-primary">
+            <i class="bi-tag me-1"></i> Phiếu giảm giá
+        </a>
+        <a th:href="@{/analytics}" class="btn btn-primary">
+            <i class="bi-graph-up me-1"></i> Phân tích
+        </a>
+        <a th:href="@{/chatbot}" class="btn btn-primary">
+            <i class="bi-chat-dots me-1"></i> Lịch sử Chatbot
+        </a>
+        <a th:href="@{/admins}" class="btn btn-primary">
+            <i class="bi-shield-lock me-1"></i> Quản trị viên
+        </a>
+        <a th:href="@{/settings}" class="btn btn-primary">
+            <i class="bi-gear me-1"></i> Cài đặt
+        </a>
+    </div>
+</div>
+
+<hr>
+
+<div class="px-4 mt-4">
+    <h2>Thêm Người Dùng Mới</h2>
+    <p class="text-muted">Nhập thông tin người dùng mới.</p>
+
+    <!-- Success and Error Messages (displayed outside form if needed) -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <!-- Create User Form with th:object binding -->
+    <form th:action="@{/users}" th:object="${userInfo}" method="post">
+        <!-- Display validation errors -->
+        <div th:if="${#fields.hasErrors()}" class="alert alert-danger">
+            <ul>
+                <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+            </ul>
+        </div>
+
+        <div class="mb-3">
+            <label for="first_name" class="form-label">Họ</label>
+            <input type="text" class="form-control" id="first_name" th:field="*{firstName}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="last_name" class="form-label">Tên</label>
+            <input type="text" class="form-control" id="last_name" th:field="*{lastName}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" th:field="*{email}" required>
+        </div>
+
+        <!-- Addresses Section -->
+        <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <div id="addressContainer" class="row"></div>
+        </div>
+        <button type="button" id="addAddressButton" class="btn btn-secondary mb-3">Thêm địa chỉ mới</button>
+        <br>
+        <button type="submit" class="btn btn-primary">Tạo Người Dùng</button>
+    </form>
+</div>
+
+<!-- JavaScript for handling dynamic address fields -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const maxAddresses = 3;
+        const addressContainer = document.getElementById('addressContainer');
+        const addAddressButton = document.getElementById('addAddressButton');
+
+        // Disable add button if maximum addresses reached.
+        function updateAddButtonState() {
+            const addressCards = addressContainer.getElementsByClassName('address-card-wrapper');
+            addAddressButton.disabled = addressCards.length >= maxAddresses;
+        }
+
+        // Create an address card element.
+        function createAddressCard() {
+            const col = document.createElement('div');
+            col.classList.add('col-md-6', 'address-card-wrapper');
+            col.innerHTML = `
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" name="addresses[][name]" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <input type="text" name="addresses[][address]" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Số điện thoại</label>
+            <input type="text" name="addresses[][phone]" class="form-control" required>
+          </div>
+          <button type="button" class="btn btn-danger remove-address">Xóa</button>
+        </div>
+      </div>
+    `;
+            return col;
+        }
+
+        addAddressButton.addEventListener('click', function() {
+            const addressCards = addressContainer.getElementsByClassName('address-card-wrapper');
+            if (addressCards.length < maxAddresses) {
+                const card = createAddressCard();
+                addressContainer.appendChild(card);
+                updateAddButtonState();
+            }
+        });
+
+        // Remove an address card when clicking the remove button.
+        addressContainer.addEventListener('click', function(e) {
+            if (e.target && e.target.matches('.remove-address')) {
+                if (confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')) {
+                    e.target.closest('.address-card-wrapper').remove();
+                    updateAddButtonState();
+                }
+            }
+        });
+    });
+</script>
+
+<!-- Bootstrap JS (Bundle) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

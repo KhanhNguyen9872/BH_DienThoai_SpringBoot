@@ -1,7 +1,11 @@
 package com.springboot.dev_spring_boot_demo.entity;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "order_info")
@@ -52,6 +56,30 @@ public class OrderInfo {
     private Order order;
 
     // Getters and setters
+
+    public OrderInfoAddress getOrderInfoAddress() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(this.address, OrderInfoAddress.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<OrderInfoProducts> getOrderInfoProducts() {
+        List<OrderInfoProducts> orderInfoProductsList = new ArrayList<>();
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            orderInfoProductsList = mapper.readValue(
+                    this.products,
+                    new TypeReference<List<OrderInfoProducts>>() {}
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orderInfoProductsList;
+    }
 
     public Integer getId() {
         return id;
