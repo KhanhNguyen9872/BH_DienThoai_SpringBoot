@@ -10,13 +10,43 @@
 </head>
 <body class="bg-light">
 
-<!-- Header: Greeting and User Actions -->
+<!-- Lời chào và hành động người dùng -->
 <div class="px-4 my-4">
   <div class="d-flex align-items-center justify-content-between">
-    <h5>
-      Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
-    </h5>
-    <div>
+    <div class="d-flex align-items-center">
+      <!-- Avatar of the current account -->
+      <img th:src="${currentUser.img != null and currentUser.img != '' ? '/' + currentUser.img : '/images/default-profile.png'}"
+           alt="Avatar" class="rounded-circle me-2" style="width:50px; height:50px; object-fit:cover;">
+      <h5>
+        Xin chào <span th:text="${currentUser.getFullName()}">Tên người dùng</span>
+      </h5>
+    </div>
+    <div class="d-flex align-items-center">
+      <div class="dropdown me-3">
+        <button class="btn btn-light position-relative dropdown-toggle" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi-bell fs-5"></i>
+          <span th:if="${#lists.size(notifications.?[isRead==false]) > 0}" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                th:text="${#lists.size(notifications.?[isRead==false])}"></span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown">
+          <li th:if="${notifications.isEmpty()}">
+            <a class="dropdown-item text-center" href="#">Không có thông báo</a>
+          </li>
+          <li th:each="notification,iterStat : ${notifications}">
+            <div th:if="${iterStat.index < 5}">
+              <a th:href="${notification.url != null ? notification.url : '#'}" class="dropdown-item text-decoration-none" target="_blank"
+                 th:classappend="${!notification.isRead} ? ' bg-light' : ''">
+                <div>
+                  <small class="text-muted" th:text="${#temporals.format(notification.time, 'HH:mm:ss dd/MM/yyyy')}"></small>
+                </div>
+                <div th:text="${notification.text}"></div>
+              </a>
+            </div>
+          </li>
+          <li><hr class="dropdown-divider"/></li>
+          <li><a class="dropdown-item text-center" th:href="@{/notifications}">Xem tất cả thông báo</a></li>
+        </ul>
+      </div>
       <a th:href="@{/profile}" class="btn btn-sm btn-outline-primary me-2">Cài đặt hồ sơ</a>
       <form th:action="@{/logout}" method="post" style="display:inline;">
         <button type="submit" class="btn btn-sm btn-danger">Đăng xuất</button>

@@ -83,9 +83,10 @@ public class ProductController extends HeaderController {
 
     // Process form submission to create a product
     @PostMapping("/products/store")
-    public String storeProduct(@ModelAttribute("productForm") ProductForm form,
+    public String storeProduct(@AuthenticationPrincipal UserDetails userDetails, @ModelAttribute("productForm") ProductForm form,
                                BindingResult result, Model model) throws UnsupportedEncodingException {
         if (result.hasErrors()) {
+            addHeaderDataToModel(userDetails, model);
             model.addAttribute("users", userService.findAll(Pageable.unpaged()).getContent());
             return "products/create";
         }

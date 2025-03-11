@@ -5,6 +5,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -22,6 +25,21 @@ public class AdminDAOImpl implements AdminDAO {
     public List<Admin> findAll() {
         TypedQuery<Admin> query = em.createQuery("from Admin", Admin.class);
         return query.getResultList();
+    }
+
+    @Override
+    public Page<Admin> findAll(Pageable pageable) {
+        // Create query for paginated results.
+        TypedQuery<Admin> query = em.createQuery("from Admin", Admin.class);
+        query.setFirstResult((int) pageable.getOffset());
+        query.setMaxResults(pageable.getPageSize());
+        List<Admin> admins = query.getResultList();
+
+        // Create query to count total records.
+        TypedQuery<Long> countQuery = em.createQuery("select count(a) from Admin a", Long.class);
+        Long count = countQuery.getSingleResult();
+
+        return new PageImpl<>(admins, pageable, count);
     }
 
     @Override

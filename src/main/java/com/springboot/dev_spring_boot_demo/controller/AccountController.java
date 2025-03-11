@@ -97,6 +97,7 @@ public class AccountController extends HeaderController {
         addHeaderDataToModel(userDetails, model);
         Account account = accountService.findById(id);
         if (account == null) {
+            addHeaderDataToModel(userDetails, model);
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy tài khoản.");
             return "redirect:/accounts";
         }

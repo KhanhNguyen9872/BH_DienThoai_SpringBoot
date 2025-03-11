@@ -69,6 +69,7 @@ public class UserController extends HeaderController {
 
         // If there are validation errors, return to the create form.
         if (bindingResult.hasErrors()) {
+            addHeaderDataToModel(userDetails, model);
             return "users/create";
         }
 
